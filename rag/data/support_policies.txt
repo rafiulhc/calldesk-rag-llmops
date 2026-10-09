@@ -1,0 +1,20 @@
+Calldesk Support, Setup and Policies
+(Source: calldesk.app, its Terms of Service and Refund Policy, summarized October 2026)
+
+Getting started: Setup is done for you and Calldesk says a business can go live in about 5 minutes. The steps are: pick a plan and check out, get a local phone number provisioned, set your business hours, and forward your after-hours calls to the provisioned number.
+
+Contact: Support email is support@calldesk.app. Sales questions can also go to sales@calldesk.app. Calldesk offers a 15-minute demo and a 5-minute walkthrough by phone at +1 (202) 773-5726.
+
+Support levels by plan: Starter includes email support, Growth includes priority support, and Scale includes dedicated 24/7 support.
+
+Calling limits and compliance: By default Calldesk handles inbound calls in the United States only and does not make outbound calls. Call recording and transcription are optional and are used with a disclosure to the caller. Do-not-call requests are honored, and abusive traffic is filtered.
+
+Messaging consent: When a business signs up for the trial, it agrees that Calldesk may contact it by email or phone to set up the trial and send booking confirmations. Callers may receive a confirmation SMS after their call. Calldesk states that it does not send marketing messages.
+
+Cancellation: Monthly subscriptions are billed in advance and can be cancelled at any time.
+
+Refunds: Refunds are at Calldesk's discretion. They are limited to duplicate charges or material service issues within the current billing cycle. To request a refund, email support@calldesk.app from the email address on the account and include the order details. Stripe processes all payments and refunds.
+
+Terms of service: The service is provided as is, without warranty, and Calldesk is not liable for indirect or consequential damages. Users must not try to bypass security or rate limits. Calldesk may suspend or terminate accounts that violate the terms. Data is processed to deliver the service, as described in the Privacy Policy. The Terms and Refund Policy were last updated on January 8, 2026.
+
+Company details: Calldesk is operated by Calldesk, LLC, 1111B S Governors Ave STE 39540, Dover, DE 19904, USA.

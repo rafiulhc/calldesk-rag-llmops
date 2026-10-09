@@ -1,0 +1,24 @@
+Calldesk Pricing and Plans
+(Source: calldesk.app/pricing, summarized October 2026)
+
+Starter plan: 599 USD per month. Includes 600 minutes per month (about 300 or more calls), 1 phone number, job booking by email link and ICS calendar invite, answers from your FAQs, an email summary of every call, instant SMS confirmation to callers, and email support.
+
+Growth plan: 899 USD per month, marked as the most popular plan. Includes 1,200 minutes per month (about 600 or more calls) and 2 phone numbers. Adds on-call escalation, voicemail transcription, bilingual English and Spanish with automatic language detection, the job log with New, Scheduled and Done statuses, and priority support.
+
+Scale plan: 1,299 USD per month. Includes 2,400 minutes per month (about 1,200 or more calls) and 3 phone numbers. Adds a custom voice or model through ElevenLabs, dedicated 24/7 support, and team permissions with an audit trail.
+
+How call estimates are calculated: The call counts assume an average call length of about 2 minutes. Real call volume varies by business.
+
+What counts as minutes: Minutes include on-call conversation time and the AI processing the call needs. Transferred calls and voicemail also count toward minutes.
+
+Extra minutes: Every plan can buy overage top-ups of 300 minutes for 100 USD. Top-ups are purchased in Admin, under Billing.
+
+Annual billing: Paying annually gives 20 percent off and 20 percent more minutes.
+
+Changing plans: Customers can change plans at any time from the billing portal. The change takes effect at the next renewal.
+
+Free trial: Every plan has a 7-day free trial, and it can be cancelled at any time. The trial number is provisioned automatically and starts answering calls right away.
+
+Larger needs: Businesses that need more than 5,000 minutes per month or a white-label version should contact sales at support@calldesk.app.
+
+Billing: Checkout and billing are handled by Stripe, and receipts are sent to the email address given at checkout. Stripe also handles tax collection.

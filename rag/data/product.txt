@@ -1,0 +1,24 @@
+Calldesk Product Overview
+(Source: calldesk.app, summarized October 2026)
+
+What Calldesk is: Calldesk is an AI virtual receptionist for home-service businesses. It answers phone calls, qualifies the caller, books the next step, and routes true emergencies to the business's on-call staff. The goal is that no job is lost because a call went to voicemail.
+
+Who it is for: Calldesk is built for home-service providers, with dedicated playbooks for plumbing, garage door, HVAC and locksmith businesses, and a general option for other home services.
+
+When it answers: Each business chooses whether Calldesk answers only after hours, handles overflow calls, or answers 24/7. Calldesk works with the business's existing phone number through call forwarding, so no carrier change or number change is needed.
+
+Languages and voice: Calldesk speaks English and Spanish and detects the caller's language automatically. It uses ElevenLabs premium voices, and the Scale plan allows a custom voice or model.
+
+What happens after a call: The business receives an email for every call with the caller's name and number, what they need, the time of the call, and a short summary of the conversation. When a job is booked, the email includes an ICS calendar invite. Callers can receive an SMS confirmation after the call, which reduces drop-offs and repeat calls.
+
+Job board: Every booked call becomes a job on a board with three stages: New, Scheduled and Done. Jobs are grouped by day, emergencies are marked with a badge, and status can be changed with one click.
+
+Policy control: Business hours, services offered, service area ZIP codes, pricing notes and FAQs are set by the business in the Admin panel. Calldesk answers from these settings and does not invent pricing.
+
+Emergency handling: Urgent issues, such as active leaks, burst pipes or sewer backups for plumbers, are escalated to the on-call list. Callers can press 0 to reach on-call. If no one answers, the call fails over to voicemail and the business receives an emailed transcript with the key details. On-call routing can be started, stopped or paused at any time, and on-call schedules can be set by day and shift.
+
+Example plumbing call: A caller reports a leak. Calldesk asks about the problem, the location (kitchen or bath, which floor, access), and whether the shutoff valve is known, then suggests an appointment time. The office gets an email with these details, an after-hours flag, whether emergency routing was triggered, and an ICS invite, and the job appears on the board.
+
+Metrics: Calldesk tracks calls, jobs, after-hours captures and minutes used, and the data can be exported to CSV.
+
+Technology: Calldesk is built on Twilio for phone calls, ElevenLabs for voice, and Stripe for billing and receipts.
