@@ -21,7 +21,7 @@
   {"question": "Roughly how many calls a month can the Starter plan handle?", "source": "pricing.txt", "facts": ["300"]},
   {"question": "I'm on a monthly plan and want to stop. Will I get money back for the rest of the month?", "source": "support_policies.txt", "facts": [["discretion", "duplicate"]]},
   {"question": "Can a caller reach a real person during an emergency?", "source": "product.txt", "facts": [["press 0", "pressing 0", "presses 0"]]},
-  {"question": "Can I get Calldesk support at 3am?", "source": "support_policies.txt", "facts": ["Scale", "24/7"]},
+  {"question": "Can I reach Calldesk's own customer support team at 3am?", "source": "support_policies.txt", "facts": ["Scale", "24/7"]},
   {"question": "Who handles payments for Calldesk?", "source": ["pricing.txt", "support_policies.txt"], "facts": ["Stripe"]},
   {"question": "Do callers get a text message after their call?", "source": ["product.txt", "support_policies.txt"], "facts": ["SMS"]},
   {"question": "Does Calldesk work for businesses in Canada?", "source": "support_policies.txt", "facts": [["united states", "u.s.", "us only", "only the us", "us inbound"]]},
