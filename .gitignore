@@ -11,3 +11,6 @@ wheels/
 
 # Request logs (may contain user questions)
 rag/logs/
+
+# pytest
+.pytest_cache/
