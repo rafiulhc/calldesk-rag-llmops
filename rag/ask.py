@@ -1,7 +1,9 @@
 import os
 import sys
+import time
 
-from ingest import client
+from ingest import EMBEDDING_MODEL, client
+from request_log import cost_usd, log_request
 from search import search
 
 MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
@@ -23,17 +25,46 @@ def build_context(results):
     return "\n\n".join(f"[{c['source']} #{c['chunk_id']}]\n{c['text']}" for _, c in results)
 
 
-def ask(question):
-    results = [r for r in search(question, top_k=TOP_K) if r[0] >= MIN_SCORE]
-    if not results:
-        return "I don't know based on the Calldesk docs.", []
+REFUSAL_ANSWER = "I don't know based on the Calldesk docs."
 
-    response = client.responses.create(
-        model=MODEL,
-        instructions=INSTRUCTIONS,
-        input=f"Context:\n{build_context(results)}\n\nQuestion: {question}",
-    )
-    return response.output_text, results
+
+def ask(question):
+    start = time.perf_counter()
+    record = {"question": question, "model": MODEL, "top_k": TOP_K, "min_score": MIN_SCORE}
+    try:
+        hits, embed_tokens = search(question, top_k=TOP_K)
+        record["retrieval_ms"] = round((time.perf_counter() - start) * 1000)
+        results = [r for r in hits if r[0] >= MIN_SCORE]
+        record["retrieved"] = [{"source": c["source"], "chunk_id": c["chunk_id"], "score": round(s, 3)}
+                               for s, c in results]
+        input_tokens = output_tokens = 0
+
+        if not results:
+            answer = REFUSAL_ANSWER
+        else:
+            llm_start = time.perf_counter()
+            response = client.responses.create(
+                model=MODEL,
+                instructions=INSTRUCTIONS,
+                input=f"Context:\n{build_context(results)}\n\nQuestion: {question}",
+            )
+            record["llm_ms"] = round((time.perf_counter() - llm_start) * 1000)
+            record["model_version"] = response.model
+            answer = response.output_text
+            input_tokens, output_tokens = response.usage.input_tokens, response.usage.output_tokens
+
+        llm_cost = cost_usd(MODEL, input_tokens, output_tokens)
+        embed_cost = cost_usd(EMBEDDING_MODEL, embed_tokens)
+        record.update(answer=answer, embed_tokens=embed_tokens,
+                      input_tokens=input_tokens, output_tokens=output_tokens,
+                      cost_usd=None if None in (llm_cost, embed_cost) else round(llm_cost + embed_cost, 8))
+        return answer, results
+    except Exception as e:
+        record["error"] = repr(e)
+        raise
+    finally:
+        record["total_ms"] = round((time.perf_counter() - start) * 1000)
+        log_request(record)
 
 
 if __name__ == "__main__":

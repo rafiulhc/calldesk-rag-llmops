@@ -8,7 +8,7 @@ import numpy as np
 from db import get_connection, init_db
 
 load_dotenv()                                                                      # NEW
-client = OpenAI()                                                                  # NEW
+client = OpenAI(timeout=20.0, max_retries=3)                                                                # NEW
 EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")    # NEW
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -48,23 +48,31 @@ def chunk_text(text, size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
     return chunks
 
 
-def embed_texts(texts):                                                            # NEW
-    """Turn a list of strings into a list of vectors, in one API call."""
+def split_title(text):
+    """The first paragraph is the document's title block. Return (title, body)."""
+    title_block, _, body = text.partition("\n\n")
+    return title_block.splitlines()[0].strip(), body
+
+
+def embed_texts(texts):
+    """Turn a list of strings into vectors, in one API call. Returns (vectors, tokens_used)."""
     response = client.embeddings.create(model=EMBEDDING_MODEL, input=texts)
-    print(f"[embedding tokens] {response.usage.total_tokens}")
-    return [item.embedding for item in response.data]
+    return [item.embedding for item in response.data], response.usage.total_tokens
 
 
 if __name__ == "__main__":
     docs = load_documents()
     chunks = []
     for doc in docs:
-        for i, piece in enumerate(chunk_text(doc["text"])):
-            chunks.append({"source": doc["source"], "chunk_id": i, "text": piece})
+        title, body = split_title(doc["text"])
+        for i, piece in enumerate(chunk_text(body)):
+            # Prefix each chunk with its document title so it stands on its own.
+            chunks.append({"source": doc["source"], "chunk_id": i, "text": f"{title}\n{piece}"})
 
     print(f"{len(docs)} documents -> {len(chunks)} chunks")
 
-    vectors = embed_texts([c["text"] for c in chunks])                             # NEW
+    vectors, tokens = embed_texts([c["text"] for c in chunks])
+    print(f"[embedding tokens] {tokens}")
     for chunk, vector in zip(chunks, vectors):                                     # NEW
         chunk["embedding"] = vector                                                # NEW
 

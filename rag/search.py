@@ -2,13 +2,15 @@ import sys
 
 import numpy as np
 
-from db import get_connection
+from db import get_pool
 from ingest import embed_texts
 
 
 def search(question, top_k=3):
-    query_vector = np.array(embed_texts([question])[0])
-    with get_connection() as conn:
+    """Return (results, embedding_tokens). Each result is (score, chunk_dict)."""
+    vectors, tokens = embed_texts([question])
+    query_vector = np.array(vectors[0])
+    with get_pool().connection() as conn:
         rows = conn.execute(
             """SELECT source, chunk_id, content, 1 - (embedding <=> %s) AS score
                FROM chunks
@@ -16,11 +18,13 @@ def search(question, top_k=3):
                LIMIT %s""",
             (query_vector, query_vector, top_k),
         ).fetchall()
-    return [(score, {"source": s, "chunk_id": i, "text": t}) for s, i, t, score in rows]
+    results = [(score, {"source": s, "chunk_id": i, "text": t}) for s, i, t, score in rows]
+    return results, tokens
 
 
 if __name__ == "__main__":
     question = " ".join(sys.argv[1:]) or "How much do extra minutes cost?"
     print(f"Question: {question}\n")
-    for score, c in search(question):
+    results, _ = search(question, top_k=8)
+    for score, c in results:
         print(f"{score:.3f}  {c['source']} #{c['chunk_id']}  {c['text'][:90]!r}")

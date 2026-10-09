@@ -3,6 +3,7 @@ import os
 import psycopg
 from dotenv import load_dotenv
 from pgvector.psycopg import register_vector
+from psycopg_pool import ConnectionPool
 
 load_dotenv()
 DATABASE_URL = os.environ["DATABASE_URL"]   # no fallback: fail loudly if it's missing
@@ -32,3 +33,15 @@ def init_db():
     with get_connection() as conn:
         for statement in SCHEMA:
             conn.execute(statement)
+
+
+_pool = None
+
+
+def get_pool():
+    """One shared pool of open connections, created on first use."""
+    global _pool
+    if _pool is None:
+        _pool = ConnectionPool(DATABASE_URL, min_size=1, max_size=5, open=True,
+                               kwargs={"autocommit": True}, configure=register_vector)
+    return _pool
