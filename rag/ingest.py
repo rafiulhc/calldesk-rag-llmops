@@ -4,6 +4,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv    # NEW
 from openai import OpenAI         # NEW
+import numpy as np
+from db import get_connection, init_db
 
 load_dotenv()                                                                      # NEW
 client = OpenAI()                                                                  # NEW
@@ -66,6 +68,12 @@ if __name__ == "__main__":
     for chunk, vector in zip(chunks, vectors):                                     # NEW
         chunk["embedding"] = vector                                                # NEW
 
-    INDEX_FILE.write_text(json.dumps(chunks))                                      # NEW
-    print(f"Saved {len(chunks)} chunks ({len(vectors[0])} numbers each) to {INDEX_FILE.name}")
-    print("First 5 numbers of chunk 0:", vectors[0][:5])
+    init_db()
+    with get_connection() as conn, conn.transaction():
+        conn.execute("TRUNCATE chunks")
+        with conn.cursor() as cur:
+            cur.executemany(
+                "INSERT INTO chunks (source, chunk_id, content, embedding) VALUES (%s, %s, %s, %s)",
+                [(c["source"], c["chunk_id"], c["text"], np.array(v)) for c, v in zip(chunks, vectors)],
+            )
+    print(f"Stored {len(chunks)} chunks in Postgres")
