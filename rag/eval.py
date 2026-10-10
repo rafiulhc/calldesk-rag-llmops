@@ -1,4 +1,5 @@
 import json
+import sys
 import time
 from pathlib import Path
 
@@ -34,12 +35,18 @@ def check(case, answer, results):
 
 
 def main():
+    if "--langchain" in sys.argv:
+        from lc_rag import lc_ask as answer_fn
+        print("Evaluating: LangChain RAG\n")
+    else:
+        answer_fn = ask
+        print("Evaluating: hand-written RAG\n")
     cases = json.loads(QUESTIONS_FILE.read_text())
     outcomes = []
     start = time.perf_counter()
 
     for case in cases:
-        answer, results = ask(case["question"])
+        answer, results = answer_fn(case["question"])
         outcome = check(case, answer, results)
         outcomes.append((case, outcome))
         print(f"[{'PASS' if outcome['answer'] else 'FAIL'}] {case['question']}")
