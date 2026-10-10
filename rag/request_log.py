@@ -9,6 +9,10 @@ LOG_FILE = Path(os.getenv("LOG_FILE", Path(__file__).parent / "logs" / "requests
 # USD per 1 million tokens. Check current prices at openai.com/api/pricing.
 PRICES = {
     "gpt-4o-mini": {"input": 0.15, "output": 0.60},
+    "gpt-4.1-nano": {"input": 0.10, "output": 0.40},
+    "gpt-5-nano": {"input": 0.05, "output": 0.40},
+    "gpt-5.6-luna": {"input": 0.20, "output": 1.20},
+    "gpt-5.4-mini": {"input": 0.75, "output": 4.50},
     "text-embedding-3-small": {"input": 0.02, "output": 0.0},
 }
 
