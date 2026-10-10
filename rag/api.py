@@ -1,16 +1,21 @@
+import hashlib
 import os
 import secrets
+import uuid
 from contextlib import asynccontextmanager
+from typing import Any
 
 import openai
 from fastapi import Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 
+from agent_service import close_agent, init_agent, run_agent
 from ask import ask
 from db import close_pool, get_pool
 from ingest import EMBEDDING_MODEL, client
 
 API_KEY = os.environ["APP_API_KEY"]   # no fallback: refuse to start without it
+KEY_ID = hashlib.sha256(API_KEY.encode()).hexdigest()[:12]   # scopes threads to the client's key
 
 
 @asynccontextmanager
@@ -25,7 +30,9 @@ async def lifespan(app):
             client.embeddings.create(model=EMBEDDING_MODEL, input=["warm-up"])   # ~1 token each, ~$0.00000002
     except openai.APIError:
         pass                                      # warm-up only; requests will still work or report errors
+    init_agent()                                  # checkpointer pool + tables for /agent conversations
     yield
+    close_agent()
     close_pool()
 
 
@@ -67,3 +74,29 @@ def ask_endpoint(body: AskRequest):
         raise HTTPException(status_code=503, detail="The language model is unavailable. Please try again.")
     sources = [Source(source=c["source"], chunk_id=c["chunk_id"], score=round(s, 3)) for s, c in results]
     return AskResponse(answer=answer, sources=sources)
+
+
+class AgentRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=500)
+    thread_id: uuid.UUID | None = None     # omit to start a new conversation; must be a UUID (unguessable)
+
+
+class ToolCall(BaseModel):
+    name: str
+    args: dict[str, Any]
+
+
+class AgentResponse(BaseModel):
+    answer: str
+    thread_id: uuid.UUID
+    tool_calls: list[ToolCall]
+
+
+@app.post("/agent", response_model=AgentResponse, dependencies=[Depends(require_api_key)])
+def agent_endpoint(body: AgentRequest):
+    thread_id = body.thread_id or uuid.uuid4()
+    try:
+        answer, tool_calls = run_agent(body.message, f"{KEY_ID}:{thread_id}")
+    except openai.APIError:
+        raise HTTPException(status_code=503, detail="The language model is unavailable. Please try again.")
+    return AgentResponse(answer=answer, thread_id=thread_id, tool_calls=tool_calls)
