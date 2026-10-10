@@ -68,7 +68,19 @@ def main():
     print(f"Answer accuracy:    {pct(answerable, 'answer'):.0f}%")
     print(f"Refusal accuracy:   {pct(refusals, 'answer'):.0f}%  ({len(refusals)} questions)")
     print(f"Total time:         {time.perf_counter() - start:.1f}s")
+    return {"retrieval": pct(answerable, "retrieval"), "answer": pct(answerable, "answer"),
+            "refusal": pct(refusals, "answer")}
+
+
+def gate(scores, minimum):
+    """CI eval gate: every metric must reach `minimum` percent. Returns the failing metrics."""
+    return [f"{name} {value:.0f}% < {minimum:.0f}%" for name, value in scores.items() if value < minimum]
 
 
 if __name__ == "__main__":
-    main()
+    scores = main()
+    minimum = next((float(a.split("=", 1)[1]) for a in sys.argv if a.startswith("--min-accuracy=")), None)
+    if minimum is not None:
+        failures = gate(scores, minimum)
+        print(f"\nEval gate ({minimum:.0f}%): {'FAILED: ' + ', '.join(failures) if failures else 'passed'}")
+        sys.exit(1 if failures else 0)

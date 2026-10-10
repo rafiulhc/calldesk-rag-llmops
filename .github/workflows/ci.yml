@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Unit tests (offline)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.23"
+      - name: Install production + dev dependencies
+        run: uv sync --frozen --no-group lessons
+      - name: Run tests (fake keys, no network, no database)
+        run: uv run pytest -v
+
+  eval:
+    name: Eval gate (32 questions, >= 95%)
+    needs: test
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: llmops
+          POSTGRES_PASSWORD: llmops
+          POSTGRES_DB: llmops
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U llmops -d llmops"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: gpt-4o-mini
+      DATABASE_URL: postgresql://llmops:llmops@localhost:5432/llmops
+      LANGSMITH_TRACING: "false"
+      LOG_FILE: /tmp/eval-requests.jsonl
+    steps:
+      - name: Skip if the OpenAI secret isn't configured
+        id: secret
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::notice::OPENAI_API_KEY secret not set - skipping the eval gate"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.secret.outputs.skip != 'true'
+      - uses: astral-sh/setup-uv@v6
+        if: steps.secret.outputs.skip != 'true'
+        with:
+          version: "0.12.23"
+      - name: Install production dependencies
+        if: steps.secret.outputs.skip != 'true'
+        run: uv sync --frozen --no-default-groups
+      - name: Ingest the Calldesk docs into Postgres
+        if: steps.secret.outputs.skip != 'true'
+        run: uv run --no-default-groups rag/ingest.py
+      - name: Run the eval and fail below 95%
+        if: steps.secret.outputs.skip != 'true'
+        run: uv run --no-default-groups rag/eval.py --min-accuracy=95
