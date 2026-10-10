@@ -12,9 +12,10 @@ ENV UV_COMPILE_BYTECODE=1 \
     PATH="/app/.venv/bin:$PATH" \
     LOG_FILE=/dev/stdout
 
-# 1. Dependencies first: this layer is cached until pyproject.toml or uv.lock change
+# 1. Dependencies first: this layer is cached until pyproject.toml or uv.lock change.
+#    --no-default-groups: production dependencies only (no dev tools, no LangChain/LangGraph/MCP lessons)
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
+RUN uv sync --frozen --no-default-groups --no-install-project
 
 # 2. Then the application code (changes often, so it comes last)
 COPY rag/ rag/

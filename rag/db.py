@@ -45,3 +45,11 @@ def get_pool():
         _pool = ConnectionPool(DATABASE_URL, min_size=1, max_size=5, open=True,
                                kwargs={"autocommit": True}, configure=register_vector)
     return _pool
+
+
+def close_pool():
+    """Close every pooled connection cleanly (called when the API shuts down)."""
+    global _pool
+    if _pool is not None:
+        _pool.close()
+        _pool = None

@@ -7,23 +7,14 @@ authors = [
     { name = "RAFIUL HASAN", email = "rafiulhasan86@gmail.com" }
 ]
 requires-python = ">=3.12"
+# Only what the production API (rag/api.py, ask.py, search.py, ingest.py, eval.py) needs.
 dependencies = [
-    "beautifulsoup4>=4.15.0",
     "fastapi>=0.143.0",
-    "langchain>=1.4.4",
-    "langchain-community>=0.4.2",
-    "langchain-core>=1.6.9",
-    "langchain-openai>=1.7.0",
-    "langchain-postgres>=0.0.19",
-    "langchain-text-splitters>=1.1.3",
-    "langgraph-checkpoint-postgres>=3.1.2",
-    "mcp>=2.3.0",
     "numpy>=2.5.3",
     "openai>=3.27.0",
-    "pgvector>=0.3,<0.4",
+    "pgvector>=0.3,<0.4",          # <0.4 because langchain-postgres (lessons group) requires it
     "psycopg-pool>=3.3.3",
     "psycopg[binary]>=3.3.6",
-    "pypdf>=6.20.0",
     "python-dotenv>=1.2.4",
     "uvicorn[standard]>=0.54.0",
 ]
@@ -40,6 +31,22 @@ dev = [
     "httpx>=0.28.1",
     "pytest>=9.1.1",
 ]
+# LangChain / LangGraph / MCP lessons: installed locally, left out of the Docker image.
+lessons = [
+    "beautifulsoup4>=4.15.0",
+    "langchain>=1.4.4",
+    "langchain-community>=0.4.2",
+    "langchain-core>=1.6.9",
+    "langchain-openai>=1.7.0",
+    "langchain-postgres>=0.0.19",
+    "langchain-text-splitters>=1.1.3",
+    "langgraph-checkpoint-postgres>=3.1.2",
+    "mcp>=2.3.0",
+    "pypdf>=6.20.0",
+]
+
+[tool.uv]
+default-groups = ["dev", "lessons"]   # `uv sync` / `uv run` locally still installs everything
 
 [tool.pytest.ini_options]
 pythonpath = ["rag"]
