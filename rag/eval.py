@@ -38,6 +38,9 @@ def main():
     if "--langchain" in sys.argv:
         from lc_rag import lc_ask as answer_fn
         print("Evaluating: LangChain RAG\n")
+    elif "--graph" in sys.argv:
+        from graph_basics import graph_ask as answer_fn
+        print("Evaluating: LangGraph self-correcting RAG\n")
     else:
         answer_fn = ask
         print("Evaluating: hand-written RAG\n")
