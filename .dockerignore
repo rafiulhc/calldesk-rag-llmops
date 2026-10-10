@@ -1,0 +1,14 @@
+# Never send secrets, local environments or generated files into the image
+.env
+.env.*
+.venv/
+.git/
+.pytest_cache/
+**/__pycache__/
+*.pyc
+rag/logs/
+rag/raw/
+tests/
+src/
+main.py
+README.md
