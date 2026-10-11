@@ -15,3 +15,10 @@ rag/logs/
 # pytest
 .pytest_cache/
 rag/raw/
+
+# Terraform: state can contain secrets (DB password, API key) - never commit it
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/*.tfplan
+infra/crash.log
