@@ -105,9 +105,38 @@ curl -s -X POST localhost:8000/agent -H "X-API-Key: $APP_API_KEY" -H "Content-Ty
 
 Interactive API docs: http://localhost:8000/docs
 
-**Tests and eval:** `uv run pytest` (40 offline tests: fake keys, no network) and
+**Tests and eval:** `uv run pytest` (45 offline tests: fake keys, no network) and
 `uv run rag/eval.py --min-accuracy=95` (the 32-question eval, about $0.002).
 CI runs the tests on every push, and the eval gate on pushes to `main`.
+
+## Deployed on AWS (Terraform, `infra/`)
+
+```mermaid
+flowchart LR
+    U[Client] -->|HTTPS| CF[CloudFront]
+    CF -->|"HTTP + secret header"| ALB[Application Load Balancer]
+    ALB --> ECS["ECS Fargate (ARM64)<br/>calldesk-api container"]
+    ECS --> RDS[("RDS PostgreSQL 17 + pgvector<br/>private subnets")]
+    ECS --> OAI[OpenAI API]
+    SM[Secrets Manager] -.->|injected at start| ECS
+    ECS -.->|JSON logs| CW[CloudWatch Logs + alarms]
+    CW -.-> SNS[SNS email]
+```
+
+- **36 resources**, region `us-west-1`: VPC (public + private subnets, **no NAT gateway**), RDS (private,
+  encrypted), ECR (immutable tags, scan on push), ECS Fargate ARM64 (0.5 vCPU / 1 GB), ALB, CloudFront (HTTPS),
+  3 Secrets Manager secrets, CloudWatch logs (7 days) and 3 alarms (5xx errors, p95 latency, no healthy host).
+- **Layered security:** the ALB only accepts CloudFront's IP ranges **and** a secret header; the app only accepts
+  the ALB; the database only accepts the app. Secrets are injected at start-up; the OpenAI key is put into
+  Secrets Manager by hand, so it never appears in code or Terraform state.
+- **Rate limiting:** 30 requests per minute per API key (429 + `Retry-After`).
+- **Live results:** the same 32-question eval run **against the deployed HTTPS API**: **100% retrieval, answers
+  and refusals**. CloudWatch Logs Insights: `/ask` p50 **1.19 s**, p95 **2.44 s**, **$0.000072** per answer.
+- **Cost:** about **$1.80/day** while running (mostly the ALB and RDS). `terraform destroy` removes everything
+  (no final snapshot, ECR force-delete, secrets with no recovery window), so it costs $0 between demos.
+
+Deploy it yourself: see the comments in `infra/` and `infra/terraform.tfvars.example`; the outputs print the
+commands for setting the OpenAI secret, running ingest as a one-off ECS task, and fetching the API key.
 
 ## Project layout
 
@@ -124,10 +153,17 @@ CI runs the tests on every push, and the eval gate on pushes to `main`.
 
 ## Limitations and next steps
 
-- **AWS deployment (in progress):** Terraform for ECR, RDS, ECS Fargate, an ALB, Secrets Manager and CloudWatch.
 - **The eval set is small and saturated:** it needs more, harder questions, a held-out set, and LLM-as-judge
   scoring instead of substring matching.
-- **No rate limiting yet**, so a public demo needs it before going live.
+- **Rate limiting is in-process**, so with several containers each counts separately; a shared store
+  (ElastiCache/Redis) would make it exact.
+- **No custom domain:** CloudFront terminates HTTPS, but CloudFront → ALB is plain HTTP (protected by the
+  prefix list and secret header). A domain + ACM certificate on the ALB would encrypt that hop too.
+- **Single-AZ database and one container:** cheap, but not highly available. Production would use RDS Multi-AZ
+  and 2+ tasks across zones (the rate limiter would then need the shared store above).
+- **Deploys are manual** (`terraform apply` + `docker push`). Next: GitHub Actions with AWS OIDC.
+- **Image scan:** one HIGH finding in Debian's zlib, with no fixed package yet and versions that don't match the
+  CVE's affected range (likely a false positive). Accepted and documented; rebuild when Debian ships an update.
 - **The knowledge base is a manual snapshot**, not synced from the source.
 - **Write tools** (book job, SMS, refund) are only demonstrated locally behind human approval
   (`rag/graph_approval.py`); they are not exposed by the API.

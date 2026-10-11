@@ -9,6 +9,7 @@ import openai
 from fastapi import Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 
+import rate_limit
 from agent_service import close_agent, init_agent, run_agent
 from ask import ask
 from db import close_pool, get_pool
@@ -57,6 +58,10 @@ class AskResponse(BaseModel):
 def require_api_key(x_api_key: str = Header(default="")):
     if not secrets.compare_digest(x_api_key, API_KEY):
         raise HTTPException(status_code=401, detail="Invalid or missing API key")
+    wait = rate_limit.limiter.check(KEY_ID)          # only counted after the key is valid
+    if wait:
+        raise HTTPException(status_code=429, detail="Too many requests. Please slow down.",
+                            headers={"Retry-After": str(wait)})
 
 
 @app.get("/health")

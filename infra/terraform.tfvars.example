@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars and adjust.
+desired_count = 1          # 0 while there is no image / no OpenAI key yet
+image_tag     = "v2"       # the ECR tag to run
+alarm_email   = ""         # e.g. "you@example.com" to receive CloudWatch alarm emails
