@@ -4,10 +4,11 @@ A production-style question-answering API and tool-using agent for **Calldesk**,
 for home-service businesses, built from scratch to learn LLM engineering end to end: RAG, embeddings,
 vector search with pgvector, evaluation, observability, LangChain, LangGraph, MCP, Docker and CI.
 
-> **Disclaimer:** this is an independent learning project. It is **not affiliated with, endorsed by, or
-> connected to Calldesk, LLC**. The knowledge base in `rag/data/` is my own short summary of information
-> that was publicly available on calldesk.app in October 2026, and may be out of date. No real bookings,
-> messages or payments are ever made: all "write" tools are simulated.
+> **Disclaimer:** this is a **personal learning project**. I work as an engineer at Calldesk, but this is
+> **not the Calldesk product**: it is not built, run or endorsed by Calldesk, LLC, and it uses **no internal
+> code, data or systems**. The knowledge base in `rag/data/` is my own short summary of information that was
+> publicly available on calldesk.app in October 2026, and may be out of date. No real bookings, messages or
+> payments are ever made: all "write" tools are simulated.
 
 ## Architecture
 
