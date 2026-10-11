@@ -34,6 +34,24 @@ def check(case, answer, results):
     return {"retrieval": retrieval_ok, "answer": facts_ok and not refused}
 
 
+def http_ask(base_url):
+    """Ask the deployed API over HTTP(S), exactly like a real client. Key from EVAL_API_KEY."""
+    import os
+    import urllib.request
+
+    key = os.environ["EVAL_API_KEY"]
+
+    def _ask(question):
+        request = urllib.request.Request(
+            f"{base_url.rstrip('/')}/ask", method="POST",
+            data=json.dumps({"question": question}).encode(),
+            headers={"X-API-Key": key, "Content-Type": "application/json"})
+        with urllib.request.urlopen(request, timeout=60) as response:
+            body = json.load(response)
+        return body["answer"], [(s["score"], s) for s in body["sources"]]
+    return _ask
+
+
 def main():
     if "--langchain" in sys.argv:
         from lc_rag import lc_ask as answer_fn
@@ -41,6 +59,9 @@ def main():
     elif "--graph" in sys.argv:
         from graph_basics import graph_ask as answer_fn
         print("Evaluating: LangGraph self-correcting RAG\n")
+    elif url := next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--url=")), None):
+        answer_fn = http_ask(url)
+        print(f"Evaluating: deployed API at {url}\n")
     else:
         answer_fn = ask
         print("Evaluating: hand-written RAG\n")
